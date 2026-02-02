@@ -14,21 +14,47 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id                  String        @id @default(uuid())
+
+  username            String        @db.VarChar(25)
+  email               String        @unique
+  password            String
+
+  role                Role
+
+  // Relation
+  customerId          String
+  organizerId         String
+  customer            Customer      @relation(fields: [customerId], references: [id])
+  organizer           Organizer      @relation(fields: [organizerId], references: [id])
+  event               Event[]
+  booking             Booking[]
+  review              Review[]
+  transactions        Transaction[]
+  promo               Promotion[]
+
+  @@map("users")
+}
+
+enum Role {
+  customer
+  organizer
+}
+
 model Customer {
   id                  String        @id @default(uuid())
 
   firstName           String        @db.VarChar(25)
   lastName            String?       @db.VarChar(25)
-  email               String        @unique
-  password            String
-
+  phoneNumber         String
+  
+  referralId          String        @default(uuid())
   referredBy          String
 
   // Relation
   referral_points     ReferralPoint[]
-  booking             Booking[]
-  review              Review[]
-  transactions        Transaction[]
+  user                User[]
 
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
@@ -48,9 +74,7 @@ model Organizer {
   password            String
 
   // Relation
-  event               Event[]
-  promo               Promotion[]
-
+  user                User[]
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
   deletedAt           DateTime?
@@ -70,11 +94,12 @@ model Event {
   eventType           EventType
   eventCategory       EventCategory
 
-  organizerId         String
+  userId              String
+  ticketId            String
 
   // Relation
-  organizer           Organizer     @relation(fields: [organizerId], references: [id])
-  ticketType          TicketType[]
+  user                User          @relation(fields: [userId], references: [id])
+  ticket              TicketType    @relation(fields: [ticketId], references: [id])
   booking             Booking[]
   promotion           Promotion[]
   review              Review[]
@@ -94,7 +119,7 @@ model TicketType {
   seatAvailable       Int
 
   // Relation
-  event               Event[]
+  ticket              Event[]
 
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
@@ -125,11 +150,11 @@ model Promotion {
   discAmount          Int
 
   eventId             String
-  organizerId         String
+  userId              String
 
   // Relation
   event               Event         @relation(fields: [eventId], references: [id])
-  organizer           Organizer     @relation(fields: [organizerId], references: [id])
+  user                User          @relation(fields: [userId], references: [id])
   booking             Booking[]
 
   createdAt           DateTime      @default(now())
@@ -143,18 +168,16 @@ model Booking {
   id                  String        @id @default(uuid())
 
   eventId             String
-  customerId          String
+  userId              String
   promoId             String
-  referralId          String
 
   quantity            Int
   totalPrice          Int
 
   // Relation
   event               Event         @relation(fields: [eventId], references: [id])
-  customer            Customer      @relation(fields: [customerId], references: [id])
+  user                User          @relation(fields: [userId], references: [id])
   promo               Promotion     @relation(fields: [promoId], references: [id])
-  referral            ReferralPoint @relation(fields: [referralId], references: [id])
   transactions        Transaction[]
 
   createdAt           DateTime      @default(now())
@@ -168,18 +191,29 @@ model Transaction {
   id                  String        @id @default(uuid())
 
   bookingId           String
-  customerId          String
+  userId              String
   amountPaid          Int
+  transactionStatus   TransactionStatus
+  paymentProof        String
 
   // Relation
   booking             Booking       @relation(fields: [bookingId], references: [id])       
-  customer            Customer      @relation(fields: [customerId], references: [id])
+  user                User          @relation(fields: [userId], references: [id])
 
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
   deletedAt           DateTime?
 
   @@map("transactions")
+}
+
+enum TransactionStatus {
+  WAITING_FOR_PAYMENT
+  WAITING_FOR_ADMIN_CONFIRMATION
+  DONE
+  REJECTED
+  EXPIRED
+  CANCELED
 }
 
 model ReferralPoint {
@@ -194,7 +228,6 @@ model ReferralPoint {
 
   // Relation
   customer            Customer      @relation(fields: [customerId], references: [id])
-  booking             Booking[]
 
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
@@ -207,14 +240,14 @@ model Review {
   id                  String        @id @default(uuid())
 
   eventId             String
-  customerId          String
+  userId              String
 
   feedback            String        @db.VarChar(100)
   rating              Int
 
   // Relation
   event               Event         @relation(fields: [eventId], references: [id])
-  customer            Customer      @relation(fields: [customerId], references: [id])
+  user                User          @relation(fields: [userId], references: [id])
 
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
