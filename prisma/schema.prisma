@@ -134,10 +134,14 @@ enum EventType {
 }
 
 enum EventCategory {
-  KONSER
+  CONCERT
   SEMINAR
-  LOREM
-  IPSUM
+  SPORTS
+  WORKSHOP
+  EXHIBITION
+  THEATER
+  FESTIVAL
+  OTHER
 }
 
 model Promotion {
