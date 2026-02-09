@@ -13,3 +13,218 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id                  String        @id @default(uuid())
+
+  username            String        @db.VarChar(25)
+  email               String        @unique
+  password            String
+  
+  // Organizer profile
+  displayName         String?       @db.VarChar(50)
+  bio                 String?       @db.VarChar(150)
+  avatarUrl           String?
+  location            String?       @db.VarChar(50)
+
+  role                Role
+
+  // Relation
+  referral            ReferralPoint[]
+  event               Event[]
+  booking             Booking[]
+  review              Review[]
+  transactions        Transaction[]
+  promo               Promotion[]
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  deletedAt           DateTime?
+
+  @@map("users")
+}
+
+enum Role {
+  customer
+  organizer
+}
+
+model Event {
+  id                  String        @id @default(uuid())
+
+  eventName           String        @db.VarChar(100)
+  startDate           DateTime
+  endDate             DateTime
+  imageUrl            String?
+  location            String        @db.VarChar(100)
+  description         String        @db.VarChar(150)
+  seatTotal           Int
+
+  eventType           EventType
+  eventCategory       EventCategory
+
+  userId              String
+  ticketId            String
+
+  // Relation
+  user                User          @relation(fields: [userId], references: [id])
+  ticket              TicketType    @relation(fields: [ticketId], references: [id])
+  booking             Booking[]
+  promotion           Promotion[]
+  review              Review[]
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  deletedAt           DateTime?
+
+  @@map("events")
+}
+
+model TicketType {
+  id                  String        @id @default(uuid())
+
+  ticketType          String        @db.VarChar(10)
+  price               Int
+  seatAvailable       Int
+
+  // Relation
+  ticket              Event[]
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  deletedAt           DateTime?
+
+  @@map("ticket_types")
+}
+
+enum EventType {
+  FREE
+  PAID
+}
+
+enum EventCategory {
+  CONCERT
+  SEMINAR
+  SPORTS
+  WORKSHOP
+  EXHIBITION
+  THEATER
+  FESTIVAL
+  OTHER
+}
+
+model Promotion {
+  id                  String        @id @default(uuid())
+
+  promoName           String        @db.VarChar(25)
+  promoStartDate      DateTime
+  promoEndDate        DateTime
+  quota               Int
+  discAmount          Int
+
+  eventId             String
+  userId              String
+
+  // Relation
+  event               Event         @relation(fields: [eventId], references: [id])
+  user                User          @relation(fields: [userId], references: [id])
+  booking             Booking[]
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  deletedAt           DateTime?
+
+  @@map("promotions")
+}
+
+model Booking {
+  id                  String        @id @default(uuid())
+
+  eventId             String
+  userId              String
+  promoId             String
+
+  quantity            Int
+  totalPrice          Int
+
+  // Relation
+  event               Event         @relation(fields: [eventId], references: [id])
+  user                User          @relation(fields: [userId], references: [id])
+  promo               Promotion     @relation(fields: [promoId], references: [id])
+  transactions        Transaction[]
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  deletedAt           DateTime?
+
+  @@map("bookings")
+}
+
+model Transaction {
+  id                  String        @id @default(uuid())
+
+  bookingId           String
+  userId              String
+  amountPaid          Int
+  transactionStatus   TransactionStatus
+  paymentProof        String
+
+  // Relation
+  booking             Booking       @relation(fields: [bookingId], references: [id])       
+  user                User          @relation(fields: [userId], references: [id])
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  deletedAt           DateTime?
+
+  @@map("transactions")
+}
+
+enum TransactionStatus {
+  WAITING_FOR_PAYMENT
+  WAITING_FOR_ADMIN_CONFIRMATION
+  DONE
+  REJECTED
+  EXPIRED
+  CANCELED
+}
+
+model ReferralPoint {
+  id                  String        @id @default(uuid())
+
+  code                String        @default(uuid())
+  points              Int
+  startDate           DateTime
+  expireDate          DateTime
+
+  customerId          String
+
+  // Relation
+  customer            User      @relation(fields: [customerId], references: [id])
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  deletedAt           DateTime?
+
+  @@map("referral_points")
+}
+
+model Review {
+  id                  String        @id @default(uuid())
+
+  eventId             String
+  userId              String
+
+  feedback            String        @db.VarChar(100)
+  rating              Int
+
+  // Relation
+  event               Event         @relation(fields: [eventId], references: [id])
+  user                User          @relation(fields: [userId], references: [id])
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  deletedAt           DateTime?
+
+  @@map("reviews")
+}
