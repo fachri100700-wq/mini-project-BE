@@ -25,8 +25,8 @@ export const authController = {
 
         res.cookie('accessToken', token, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'strict',
+            secure: false,
+            sameSite: 'lax',
             path: '/'
         })
 

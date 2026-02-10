@@ -8,7 +8,7 @@ const app = express();
 app.use(cors(corsOptions));
 app.use(express.json());
 
-app.use('/api/auth', authRouter);
+app.use('/auth', authRouter);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.expose === true ? err.statusCode : 500;
