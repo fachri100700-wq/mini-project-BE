@@ -3,17 +3,20 @@ import { transactionService } from "../services/transaction.service";
 
 export const transactionController = {
     async create(req: Request, res: Response){
-        const {bookingId, userId, expiry, amountPaid, paymentProof} = req.body
+        const {bookingId, userId} = req.body
 
         const files = req.file as Express.Multer.File;
 
-        await transactionService.create(files, {
+        const transaction = await transactionService.create(files, {
           bookingId,
-          userId,
-          amountPaid,
-          expiry,
-          paymentProof
+          userId
         });
+
+        res.status(200).json({
+            success: true,
+            message: "Creat transaction success",
+            data: transaction
+        })
     }
 
     

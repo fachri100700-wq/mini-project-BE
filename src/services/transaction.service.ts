@@ -9,18 +9,22 @@ export const transactionService = {
     files: Express.Multer.File,
     {
       bookingId,
-      userId,
-      expiry,
-      amountPaid,
-      paymentProof,
+      userId
     }: Pick<
       Transaction,
-      "bookingId" | "userId" | "expiry" | "amountPaid" | "paymentProof"
+      "bookingId" | "userId"
     >,
   ) {
     if (!files) {
       throw AppError("Image is required", 400);
     }
+
+    const checkExpired = await prisma.transaction.findFirst({
+      where: { bookingId, transactionStatus: "EXPIRED" },
+    });
+
+    if (checkExpired)
+      throw AppError("Your transaction is expired", 400);
 
     const uploadPaymentProof = await cloudinaryUpload(files.buffer);
 
@@ -46,6 +50,7 @@ export const transactionService = {
         expiry: addMinutes(Date.now(), 1),
         amountPaid: Number(totalPriceBooking.totalPrice),
         paymentProof: uploadPaymentProof.secureUrl,
+        transactionStatus: "WAITING_FOR_ADMIN_CONFIRMATION",
       },
     });
   },
