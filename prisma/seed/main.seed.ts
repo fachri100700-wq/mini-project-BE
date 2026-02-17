@@ -6,8 +6,8 @@ import { seedEvent } from "./_data/event.seed";
 async function main() {
   try {
     await seedUsers();
-    await seedTicketType();
     await seedEvent()
+    await seedTicketType();
 
   } catch {
     console.log("Seeding failed:");

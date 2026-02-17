@@ -5,10 +5,9 @@ export async function seedEvent() {
   console.log("🌱 Seeding Events...");
 
   const user = await prisma.user.findMany();
-  const ticketType = await prisma.ticketType.findMany();
 
-  if (user.length === 0 || ticketType.length === 0) {
-    throw new Error("user or ticket type can't be found in DB!");
+  if (user.length === 0) {
+    throw new Error("user type can't be found in DB!");
   }
 
   const events = [
@@ -23,7 +22,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.CONCERT,
       userId: user[0].id,
-      ticketId: ticketType[1].id,
     },
     {
       eventName: "Rock Nation",
@@ -37,7 +35,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.CONCERT,
       userId: user[1].id,
-      ticketId: ticketType[2].id,
     },
     {
       eventName: "Startup Seminar",
@@ -50,7 +47,6 @@ export async function seedEvent() {
       eventType: EventType.FREE,
       eventCategory: EventCategory.SEMINAR,
       userId: user[2].id,
-      ticketId: ticketType[3].id,
     },
     {
       eventName: "Digital Marketing Talk",
@@ -63,7 +59,6 @@ export async function seedEvent() {
       eventType: EventType.FREE,
       eventCategory: EventCategory.SEMINAR,
       userId: user[3].id,
-      ticketId: ticketType[4].id,
     },
     {
       eventName: "City Fun Run",
@@ -77,7 +72,6 @@ export async function seedEvent() {
       eventType: EventType.FREE,
       eventCategory: EventCategory.SPORTS,
       userId: user[4].id,
-      ticketId: ticketType[5].id,
     },
     {
       eventName: "National Badminton Cup",
@@ -90,7 +84,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.SPORTS,
       userId: user[5].id,
-      ticketId: ticketType[6].id,
     },
     {
       eventName: "Frontend Workshop",
@@ -104,7 +97,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.WORKSHOP,
       userId: user[6].id,
-      ticketId: ticketType[7].id,
     },
     {
       eventName: "Backend Masterclass",
@@ -117,7 +109,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.WORKSHOP,
       userId: user[7].id,
-      ticketId: ticketType[0].id,
     },
     {
       eventName: "Modern Art Expo",
@@ -130,7 +121,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.EXHIBITION,
       userId: user[8].id,
-      ticketId: ticketType[1].id,
     },
     {
       eventName: "Photography Exhibition",
@@ -143,7 +133,6 @@ export async function seedEvent() {
       eventType: EventType.FREE,
       eventCategory: EventCategory.EXHIBITION,
       userId: user[9].id,
-      ticketId: ticketType[2].id,
     },
     {
       eventName: "Drama Theatre Night",
@@ -157,7 +146,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.THEATER,
       userId: user[10].id,
-      ticketId: ticketType[1].id,
     },
     {
       eventName: "Comedy Theatre Show",
@@ -170,7 +158,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.THEATER,
       userId: user[11].id,
-      ticketId: ticketType[2].id,
     },
     {
       eventName: "Summer Festival",
@@ -183,7 +170,6 @@ export async function seedEvent() {
       eventType: EventType.FREE,
       eventCategory: EventCategory.FESTIVAL,
       userId: user[12].id,
-      ticketId: ticketType[3].id,
     },
     {
       eventName: "Food Festival",
@@ -197,7 +183,6 @@ export async function seedEvent() {
       eventType: EventType.FREE,
       eventCategory: EventCategory.FESTIVAL,
       userId: user[13].id,
-      ticketId: ticketType[4].id,
     },
     {
       eventName: "Tech Community Meetup",
@@ -211,7 +196,6 @@ export async function seedEvent() {
       eventType: EventType.FREE,
       eventCategory: EventCategory.OTHER,
       userId: user[14].id,
-      ticketId: ticketType[5].id,
     },
     {
       eventName: "Creative Community Night",
@@ -224,7 +208,6 @@ export async function seedEvent() {
       eventType: EventType.FREE,
       eventCategory: EventCategory.OTHER,
       userId: user[15].id,
-      ticketId: ticketType[6].id,
     },
     {
       eventName: "Jazz Evening",
@@ -237,7 +220,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.CONCERT,
       userId: user[16].id,
-      ticketId: ticketType[7].id,
     },
     {
       eventName: "Indie Music Fest",
@@ -251,7 +233,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.CONCERT,
       userId: user[17].id,
-      ticketId: ticketType[0].id,
     },
     {
       eventName: "Finance Seminar",
@@ -264,7 +245,6 @@ export async function seedEvent() {
       eventType: EventType.FREE,
       eventCategory: EventCategory.SEMINAR,
       userId: user[18].id,
-      ticketId: ticketType[1].id,
     },
     {
       eventName: "Investment Workshop",
@@ -277,7 +257,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.WORKSHOP,
       userId: user[19].id,
-      ticketId: ticketType[2].id,
     },
     {
       eventName: "City Cycling",
@@ -291,7 +270,6 @@ export async function seedEvent() {
       eventType: EventType.FREE,
       eventCategory: EventCategory.SPORTS,
       userId: user[20].id,
-      ticketId: ticketType[3].id,
     },
     {
       eventName: "Art & Culture Expo",
@@ -305,7 +283,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.EXHIBITION,
       userId: user[21].id,
-      ticketId: ticketType[4].id,
     },
     {
       eventName: "Traditional Festival",
@@ -319,7 +296,6 @@ export async function seedEvent() {
       eventType: EventType.FREE,
       eventCategory: EventCategory.FESTIVAL,
       userId: user[22].id,
-      ticketId: ticketType[5].id,
     },
     {
       eventName: "Open Community Talk",
@@ -332,7 +308,6 @@ export async function seedEvent() {
       eventType: EventType.FREE,
       eventCategory: EventCategory.OTHER,
       userId: user[23].id,
-      ticketId: ticketType[6].id,
     },
     {
       eventName: "Coffee Brewing Masterclass",
@@ -346,7 +321,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.WORKSHOP,
       userId: user[24].id,
-      ticketId: ticketType[0].id,
     },
     {
       eventName: "Annual Book Fair 2026",
@@ -360,7 +334,6 @@ export async function seedEvent() {
       eventType: EventType.FREE,
       eventCategory: EventCategory.EXHIBITION,
       userId: user[25].id,
-      ticketId: ticketType[1].id,
     },
     {
       eventName: "Cyber Security Conference",
@@ -373,7 +346,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.SEMINAR,
       userId: user[26].id,
-      ticketId: ticketType[2].id,
     },
     {
       eventName: "Glow in the Dark Yoga",
@@ -387,7 +359,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.SPORTS,
       userId: user[27].id,
-      ticketId: ticketType[3].id,
     },
     {
       eventName: "Indie Game Dev Meetup",
@@ -401,7 +372,6 @@ export async function seedEvent() {
       eventType: EventType.FREE,
       eventCategory: EventCategory.OTHER,
       userId: user[28].id,
-      ticketId: ticketType[4].id,
     },
     {
       eventName: "New Year Eve Fireworks Party",
@@ -414,7 +384,6 @@ export async function seedEvent() {
       eventType: EventType.PAID,
       eventCategory: EventCategory.FESTIVAL,
       userId: user[29].id,
-      ticketId: ticketType[5].id,
     },
   ];
 

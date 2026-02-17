@@ -11,7 +11,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -64,11 +63,10 @@ model Event {
   eventCategory       EventCategory
 
   userId              String
-  ticketId            String
 
   // Relation
   user                User          @relation(fields: [userId], references: [id])
-  ticket              TicketType    @relation(fields: [ticketId], references: [id])
+  ticketType          TicketType[]
   booking             Booking[]
   promotion           Promotion[]
   review              Review[]
@@ -88,7 +86,9 @@ model TicketType {
   seatAvailable       Int
 
   // Relation
-  ticket              Event[]
+  eventId             String
+
+  event               Event         @relation(fields: [eventId], references: [id]) 
 
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
@@ -166,7 +166,8 @@ model Transaction {
   bookingId           String
   userId              String
   amountPaid          Int
-  transactionStatus   TransactionStatus
+  expiry              DateTime
+  transactionStatus   TransactionStatus  @default(WAITING_FOR_PAYMENT)
   paymentProof        String
 
   // Relation
