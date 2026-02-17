@@ -4,15 +4,16 @@ import { multerUpload } from "../helpers/multer.helper";
 
 const router = Router()
 
-router.post(
-  "/",
+router.patch(
+  "/upload/:id",
   multerUpload(
     "src/uploads",
     "IMG-MENU",
     ["jpg", "jpeg", "png", "svg", "webp"],
     "memory",
   ).single("payment-proof"),
-  transactionController.create,
+  transactionController.uploadPaymentProof,
 );
+router.patch("/verify/:id", transactionController.verify)
 
 export default router
