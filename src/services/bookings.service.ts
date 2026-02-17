@@ -103,9 +103,9 @@ export const bookingsService = {
         },
         data: {
           seatAvailable: {
-            decrement: quantity,
+            decrement: Number(quantity),
           },
-          event: { update: { seatTotal: { decrement: quantity } } },
+          event: { update: { seatTotal: { decrement: Number(quantity) } } },
         },
       });
 
