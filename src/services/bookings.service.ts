@@ -1,6 +1,7 @@
 import { Booking } from "../../generated/prisma/client";
 import { prisma } from "../config/prisma-client.config";
 import AppError from "../helpers/app-error.helper";
+import { addMinutes } from "date-fns";
 
 export const bookingsService = {
   async get(id: string) {
@@ -11,9 +12,9 @@ export const bookingsService = {
       },
       include: {
         user: {
-          select: { 
-            username: true, 
-            email: true 
+          select: {
+            username: true,
+            email: true,
           },
         },
         event: {
@@ -82,7 +83,7 @@ export const bookingsService = {
 
       let promo = null;
       //karena typresript deteksi promoId bisa null karena "string?"
-      if (promoId && eventId) {
+      if (promoId) {
         promo = await tx.promotion.findFirst({
           where: {
             id: promoId,
@@ -119,7 +120,7 @@ export const bookingsService = {
         });
       }
 
-      return await tx.booking.create({
+      const booking = await tx.booking.create({
         data: {
           quantity: Number(quantity),
           totalPrice: Number(finalPrice),
@@ -129,6 +130,35 @@ export const bookingsService = {
           promoId: promoId ?? null,
         },
       });
+
+      const totalPriceBooking = await tx.booking.findFirst({
+        where: {
+          id: booking.id,
+          userId: userId,
+          deletedAt: null,
+        },
+        select: {
+          totalPrice: true,
+        },
+      });
+      
+
+      if (!totalPriceBooking) {
+        throw AppError("Booking not found", 404);
+      }
+
+      await tx.transaction.create({
+        data: {
+          bookingId: booking.id,
+          userId,
+          expiry: addMinutes(Date.now(), 15),
+          amountPaid: Number(totalPriceBooking.totalPrice),
+          paymentProof: "",
+          transactionStatus: "WAITING_FOR_PAYMENT",
+        },
+      });
+
+      return booking
     });
   },
 };

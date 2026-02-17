@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import bookingRouter from "./routers/bookings.router";
+import { mainJobs } from "./jobs/main.job";
 
 const PORT: number = 8000;
 
@@ -9,6 +10,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/booking", bookingRouter);
+
+mainJobs()
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error("ERROR:", err);

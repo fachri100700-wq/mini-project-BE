@@ -144,7 +144,7 @@ model Booking {
   eventId             String
   ticketTypeId        String
   userId              String
-  promoId             String
+  promoId             String?
 
   quantity            Int
   totalPrice          Int
@@ -153,7 +153,7 @@ model Booking {
   event               Event         @relation(fields: [eventId], references: [id])
   ticketType          TicketType    @relation(fields: [ticketTypeId], references: [id])
   user                User          @relation(fields: [userId], references: [id])
-  promo               Promotion     @relation(fields: [promoId], references: [id])
+  promo               Promotion?     @relation(fields: [promoId], references: [id])
   transactions        Transaction[]
 
   createdAt           DateTime      @default(now())
@@ -171,7 +171,7 @@ model Transaction {
   amountPaid          Int
   expiry              DateTime
   transactionStatus   TransactionStatus  @default(WAITING_FOR_PAYMENT)
-  paymentProof        String
+  paymentProof        String?
 
   // Relation
   booking             Booking       @relation(fields: [bookingId], references: [id])       
