@@ -13,7 +13,7 @@ export const authService = {
             }
         })
 
-        if(findUserByEmail) throw AppError('Email already registered', 400)
+        if(findUserByEmail) throw AppError('Email already registered', 409)
 
         const hashedPassword = await hashing(password);
 
@@ -34,11 +34,11 @@ export const authService = {
             }
         })
 
-        if(!findUserByEmail) throw AppError('User account not registered', 404)
+        if(!findUserByEmail) throw AppError('Invalid email or password', 401)
 
         const passwordMatch = await hashMatch(password, findUserByEmail?.password);
 
-        if(!passwordMatch) throw AppError('User password is invalid', 400)
+        if(!passwordMatch) throw AppError('Invalid email or password', 401)
 
         const token = jwtCreateToken(
             { userId: findUserByEmail?.id, role: findUserByEmail?.role },
@@ -60,7 +60,9 @@ export const authService = {
             where: {
                 id: userId
             }
-        });
+        })
+
+        if(!findUserById) throw AppError("User not found", 404);
 
         return {
             username: findUserById?.username,
