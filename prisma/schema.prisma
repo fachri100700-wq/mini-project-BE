@@ -59,49 +59,50 @@ enum Role {
 }
 
 model Event {
-  id                  String        @id @default(uuid())
+  id            String              @id @default(uuid())
 
-  eventName           String        @db.VarChar(100)
-  startDate           DateTime
-  endDate             DateTime
-  imageUrl            String?
-  location            String        @db.VarChar(100)
-  description         String        @db.VarChar(150)
-  seatTotal           Int
+  eventName     String              @db.VarChar(100)
+  startDate     DateTime
+  endDate       DateTime
+  imageUrl      String?
+  location      String              @db.VarChar(100)
+  description   String              @db.VarChar(150)
+  seatTotal     Int
 
-  eventType           EventType
-  eventCategory       EventCategory
+  eventType     EventType
+  eventCategory EventCategory
 
-  userId              String
-  ticketId            String
+  userId        String
 
   // Relation
-  user                User          @relation(fields: [userId], references: [id])
-  ticket              TicketType    @relation(fields: [ticketId], references: [id])
-  booking             Booking[]
-  promotion           Promotion[]
-  review              Review[]
+  user          User                @relation(fields: [userId], references: [id])
+  ticketType    TicketType[]
+  booking       Booking[]
+  promotion     Promotion[]
+  review        Review[]
 
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
-  deletedAt           DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  deletedAt     DateTime?
 
   @@map("events")
 }
 
 model TicketType {
-  id                  String        @id @default(uuid())
+  id            String   @id @default(uuid())
 
-  ticketType          String        @db.VarChar(10)
-  price               Int
-  seatAvailable       Int
+  ticketType    String   @db.VarChar(10)
+  price         Int
+  seatAvailable Int
 
-  // Relation
-  ticket              Event[]
+  eventId       String
 
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
-  deletedAt           DateTime?
+  event         Event    @relation(fields: [eventId], references: [id])
+  booking       Booking[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
 
   @@map("ticket_types")
 }
@@ -151,6 +152,7 @@ model Booking {
 
   eventId             String
   userId              String
+  ticketTypeId        String
   promoId             String
 
   quantity            Int
@@ -159,6 +161,7 @@ model Booking {
   // Relation
   event               Event         @relation(fields: [eventId], references: [id])
   user                User          @relation(fields: [userId], references: [id])
+  ticketType          TicketType    @relation(fields: [ticketTypeId], references: [id])
   promo               Promotion     @relation(fields: [promoId], references: [id])
   transactions        Transaction[]
 
@@ -175,8 +178,8 @@ model Transaction {
   bookingId           String
   userId              String
   amountPaid          Int
-  transactionStatus   TransactionStatus
-  paymentProof        String
+  transactionStatus   TransactionStatus   @default(WAITING_FOR_PAYMENT)
+  paymentProof        String?
 
   // Relation
   booking             Booking       @relation(fields: [bookingId], references: [id])       
