@@ -21,5 +21,13 @@ export const authRegisterValidator = [
 
     body('role')
     .isIn(["customer", "organizer"])
-    .withMessage('Role must be customer or organizer')
+    .withMessage('Role must be customer or organizer'),
+
+    body('referralCode')
+    .optional()
+    .isString()
+    .withMessage('Referral code must be a string')
+    .isLength({ min: 6, max: 20 })
+    .withMessage('Referral code is invalid')
+    .trim(),
 ]

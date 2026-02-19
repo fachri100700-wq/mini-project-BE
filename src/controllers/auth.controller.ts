@@ -1,27 +1,28 @@
 import { Request, Response } from "express";
 import { authService } from "../services/auth.service";
+import { LoginDTO, RegisterDTO } from "../validators/auth.dto";
 
 export const authController = {
     async register(req: Request, res: Response){
-        const { email, username, password, role } = req.body;
+        const body = req.body as RegisterDTO;
 
-        await authService.register({ email, username, password, role })
+        await authService.register(body)
 
         res.status(201).json({
             success: true,
             message: 'User registered successfully',
             data: {
-                email,
-                username,
-                role
+                email: body.email,
+                username: body.username,
+                role: body.role
             }
         })
     },
 
     async login(req: Request, res: Response){
-        const { email, password } = req.body;
+        const body = req.body as LoginDTO;
 
-        const { username, Role, token } = await authService.login({email, password})
+        const { username, Role, token } = await authService.login(body)
 
         res.cookie('accessToken', token, {
             httpOnly: true,

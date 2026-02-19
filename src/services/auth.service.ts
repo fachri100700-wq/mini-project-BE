@@ -4,9 +4,18 @@ import { prisma } from "../config/prisma-client.config";
 import AppError from "../helpers/app-error.helper";
 import { hashing, hashMatch } from "../helpers/bcrypt.helper";
 import { jwtCreateToken } from "../helpers/jwt.helper";
+import generateReferralCode from "../helpers/referralcode.helper";
+import { LoginDTO, RegisterDTO } from "../validators/auth.dto";
 
 export const authService = {
-    async register({ email, username, password, role }: Pick<User, 'email' | 'username' | 'password' | 'role'>){
+    async register({ 
+            email,
+            username,
+            password,
+            role,
+            referralCode
+        }: RegisterDTO){
+        
         const findUserByEmail = await prisma.user.findUnique({
             where: {
                 email
@@ -16,18 +25,60 @@ export const authService = {
         if(findUserByEmail) throw AppError('Email already registered', 409)
 
         const hashedPassword = await hashing(password);
+        const newReferralCode = await generateReferralCode(prisma);
+        
+        let referrer: User | null = null;
 
-        await prisma.user.create({
-            data: {
-                username,
-                email,
-                password: hashedPassword,
-                role
+        if(referralCode) {
+            referrer = await prisma.user.findUnique({
+                where: { referralCode },
+            });
+
+            if(!referrer) {
+                throw AppError("Invalid referral code", 400);
             }
-        })
+        }
+
+        await prisma.$transaction(async (tx) => {
+            const user = await tx.user.create({
+                data: {
+                    username,
+                    email,
+                    password: hashedPassword,
+                    role,
+                    referralCode: newReferralCode,
+                    referredById: referrer?.id,
+                },
+            });
+
+            if (referrer) {
+                const now = new Date();
+                const expire = new Date();
+                expire.setMonth(now.getMonth() + 3);
+
+                await tx.referralReward.create({
+                    data: {
+                        userId: referrer.id,
+                        points: 10000,
+                        reason: "REFERRED_USER",
+                        startDate: now,
+                        expireDate: expire,
+                    },
+                });
+
+                await tx.coupon.create({
+                    data: {
+                        userId: user.id,
+                        code: `REF-${newReferralCode}`,
+                        discount: 10000,
+                        expiredDate: expire,
+                    },
+                });
+            }
+        });
     },
 
-    async login({ email, password }: Pick<User, 'email' | 'password'>) {
+    async login({ email, password }: LoginDTO) {
         const findUserByEmail = await prisma.user.findUnique({
             where: {
                 email
