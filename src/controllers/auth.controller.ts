@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { authService } from "../services/auth.service";
-import { LoginDTO, RegisterDTO } from "../validators/auth.dto";
+import { LoginDTO, RegisterDTO } from "../types/auth.dto";
 
 export const authController = {
     async register(req: Request, res: Response){

@@ -5,7 +5,7 @@ import AppError from "../helpers/app-error.helper";
 import { hashing, hashMatch } from "../helpers/bcrypt.helper";
 import { jwtCreateToken } from "../helpers/jwt.helper";
 import generateReferralCode from "../helpers/referralcode.helper";
-import { LoginDTO, RegisterDTO } from "../validators/auth.dto";
+import { LoginDTO, RegisterDTO } from "../types/auth.dto";
 
 export const authService = {
     async register({ 
