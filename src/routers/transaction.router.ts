@@ -4,6 +4,7 @@ import { multerUpload } from "../helpers/multer.helper";
 
 const router = Router()
 
+router.get('/:id', transactionController.getWaitingConfirm)
 router.patch(
   "/upload/:id",
   multerUpload(

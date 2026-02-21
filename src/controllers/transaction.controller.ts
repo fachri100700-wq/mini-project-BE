@@ -3,6 +3,18 @@ import { transactionService } from "../services/transaction.service";
 import AppError from "../helpers/app-error.helper";
 
 export const transactionController = {
+  async getWaitingConfirm(req: Request, res: Response){
+    
+
+    const result = await transactionService.getWaitingConfirm()
+
+    res.status(200).json({
+      success: true,
+      message: `Get success`,
+      data: result
+    })
+  },
+  
   async uploadPaymentProof(req: Request, res: Response) {
     const {id} = req.params
     const { bookingId, userId } = req.body;
@@ -24,6 +36,8 @@ export const transactionController = {
   async verify(req: Request, res: Response) {
     const { id } = req.params; 
     const { status } = req.body; 
+
+    
 
     if (!status || !["DONE", "REJECTED"].includes(status)) {
       throw AppError("Status must 'DONE' atau 'REJECTED'", 400);

@@ -4,6 +4,42 @@ import AppError from "../helpers/app-error.helper";
 import { cloudinaryUpload } from "../helpers/cloudinary.helper";
 
 export const transactionService = {
+  async getWaitingConfirm(){
+    const result = await prisma.booking.findMany({
+      where: {
+        deletedAt: null,
+        transactions: {
+          some: {
+            // Narik booking yang punya minimal 1 transaksi nunggu konfirmasi (beda table/relasi)
+            transactionStatus: "WAITING_FOR_ADMIN_CONFIRMATION",
+          },
+        },
+      },
+      include: {
+        user: {
+          select: {
+            username: true,
+          },
+        },
+        event: {
+          select: {
+            eventName: true,
+          },
+        },
+        transactions: {
+          where: { transactionStatus: "WAITING_FOR_ADMIN_CONFIRMATION" },
+          select: {
+            id: true, 
+            amountPaid: true,
+            paymentProof: true,
+          },
+        },
+      },
+    });
+    
+    return result
+  },
+  
   async uploadPaymentProof(
     id: string, files: Express.Multer.File,
     { bookingId, userId }: Pick<Transaction, "bookingId" | "userId">,
@@ -47,6 +83,8 @@ export const transactionService = {
   },
 
   async verify(id: string, status: "DONE" | "REJECTED") {
+
+    
     return await prisma.$transaction(async (tx) => {
       const transaction = await tx.transaction.findFirst({
         where: {
@@ -56,6 +94,8 @@ export const transactionService = {
           booking: true
         }
       });
+
+      
 
       if(!transaction){
         throw AppError("Transaction is not found", 404)
