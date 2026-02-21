@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(cors(corsOptions));
 
-app.use("/api/booking", bookingRouter);
+app.use("/api/bookings", bookingRouter);
 
 mainJobs()
 
