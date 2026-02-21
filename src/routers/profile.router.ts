@@ -5,6 +5,7 @@ import { JWT_TOKEN_SECRET_KEY } from "../config/main.config";
 import { customerOnly } from "../middlewares/role.middleware";
 import { updateProfileValidator } from "../validators/profile-update.validator";
 import { expressRequestValidation } from "../middlewares/express-request-validation.middleware";
+import { changePasswordValidator } from "../validators/change-password.validator";
 
 const router = Router();
 
@@ -18,6 +19,13 @@ router.get('/coupons', profileController.getCoupons);
 router.patch('/',
     updateProfileValidator,
     expressRequestValidation,
-    profileController.updateProfile);
+    profileController.updateProfile
+);
+
+router.patch('/change-password',
+    changePasswordValidator,
+    expressRequestValidation,
+    profileController.changePassword
+);
 
 export default router;

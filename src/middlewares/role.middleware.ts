@@ -6,7 +6,7 @@ export function customerOnly(req: Request, res: Response, next: NextFunction) {
     if (role !== "customer") {
         return res.status(403).json({
             success: false,
-            message: "Only customers can access this profile",
+            message: "You're not authorized to view this page",
         });
     }
 

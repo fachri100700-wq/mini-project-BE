@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma-client.config"
 import AppError from "../helpers/app-error.helper";
+import { hashing, hashMatch } from "../helpers/bcrypt.helper";
 import { CouponResponseDTO } from "../types/coupon-response.dto";
 import { ProfileResponseDTO } from "../types/profile-response.dto";
 import { ReferralInfoResponseDTO } from "../types/referral-response.dto";
@@ -84,6 +85,31 @@ export const profileService = {
                 username: true,
                 avatarUrl: true,
             },
+        });
+    },
+
+    async changePassword(userId: string, currentPassword: string, newPassword: string) {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { password: true },
+        });
+        if (!user) throw AppError("User not found", 404);
+
+        const isMatch = await hashMatch(currentPassword, user?.password);
+        if (!isMatch) {
+            throw AppError("Current password is incorrect", 400);
+        }
+
+        const isSame = await hashMatch(newPassword, user?.password);
+        if (isSame) {
+            throw AppError("New password must be different from the current password", 400);
+        }
+
+        const hashedPassword = await hashing(newPassword);
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: { password: hashedPassword },
         });
     },
 }

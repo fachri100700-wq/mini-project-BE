@@ -49,4 +49,23 @@ export const profileController = {
             data,
         });
     },
+
+    async changePassword(req: Request, res: Response) {
+        const { userId } = res?.locals?.payload;
+
+        const { currentPassword, newPassword } = req.body;
+
+        await profileService.changePassword(
+            userId,
+            currentPassword,
+            newPassword
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Password updated successfully",
+        });
+    },
+
+    
 }

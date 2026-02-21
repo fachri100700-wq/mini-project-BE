@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { authService } from "../services/auth.service";
 import { LoginDTO, RegisterDTO } from "../types/auth.dto";
 
@@ -54,5 +54,34 @@ export const authController = {
                 role,
             }
         })
-    }
+    },
+
+    async forgotPassword(req: Request, res: Response, next: NextFunction){
+        try {
+            const { email } = req.body;
+
+            await authService.forgotPassword(email);
+
+            res.status(200).json({
+                message: "If the email exists, a reset link has been sent",
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    async resetPassword(req: Request, res: Response, next: NextFunction){
+        try {
+            const { token, newPassword } = req.body;
+
+            await authService.resetPassword(token, newPassword);
+
+            res.status(200).json({
+                success: true,
+                message: "Password reset successfully",
+            });
+        } catch (error) {
+            next(error);
+        }
+    },
 }

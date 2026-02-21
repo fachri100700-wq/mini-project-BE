@@ -1,4 +1,5 @@
-import { Role, User } from "../../generated/prisma/client";
+import { EVENT_APP_URL, JWT_RESET_SECRET_KEY, USER_EMAILER } from "../config/main.config";
+import { User } from "../../generated/prisma/client";
 import { JWT_TOKEN_SECRET_KEY } from "../config/main.config";
 import { prisma } from "../config/prisma-client.config";
 import AppError from "../helpers/app-error.helper";
@@ -6,6 +7,18 @@ import { hashing, hashMatch } from "../helpers/bcrypt.helper";
 import { jwtCreateToken } from "../helpers/jwt.helper";
 import generateReferralCode from "../helpers/referralcode.helper";
 import { LoginDTO, RegisterDTO } from "../types/auth.dto";
+import path from 'node:path';
+import fs from 'fs';
+import Handlebars from "handlebars";
+import transporter from "../helpers/nodemailer.helper";
+import jwt from "jsonwebtoken";
+
+type ResetPasswordTokenPayload = {
+    userId: string;
+    purpose: "FORGOT_PASSWORD";
+    iat: number;
+    exp: number;
+};
 
 export const authService = {
     async register({ 
@@ -26,12 +39,13 @@ export const authService = {
 
         const hashedPassword = await hashing(password);
         const newReferralCode = await generateReferralCode(prisma);
+        const cleanReferralCode = referralCode?.trim();
         
         let referrer: User | null = null;
 
-        if(referralCode) {
+        if(cleanReferralCode) {
             referrer = await prisma.user.findUnique({
-                where: { referralCode },
+                where: { referralCode: cleanReferralCode },
             });
 
             if(!referrer) {
@@ -120,5 +134,86 @@ export const authService = {
             role: findUserById?.role
         }
         
+    },
+
+    async forgotPassword(email: string) {
+        const findEmail = await prisma.user.findUnique({
+            where: { email },
+            select: {
+                id: true,
+                username: true,
+            },
+        });
+
+        if (!findEmail) return;
+
+        const resetToken = jwtCreateToken(
+            {
+                userId: findEmail?.id,
+                purpose: "FORGOT_PASSWORD",
+            },
+            JWT_RESET_SECRET_KEY!,
+            {
+                expiresIn: '15m',
+            },
+        );
+
+        const templateDir = path.resolve(__dirname, './../templates');
+
+        const templatePath = path.join(templateDir, 'forgot-password.html');
+
+        const templateSource = fs.readFileSync(templatePath, 'utf-8');
+
+        const compiledTemplate = Handlebars.compile(templateSource);
+
+        const html = compiledTemplate({
+            username: findEmail?.username,
+            resetPasswordUrl: `${EVENT_APP_URL}/reset-password?token=${resetToken}`,
+            appName: "Event Platform"
+        });
+
+        await transporter.sendMail({
+            from: `"EventKuy" <${USER_EMAILER}>`,
+            to: email,
+            subject: 'Reset Password',
+            html: html,
+        });   
+    },
+
+    async resetPassword(token: string, newPassword: string) {
+        let payload: ResetPasswordTokenPayload;
+
+        try {
+            payload = jwt.verify(token, JWT_RESET_SECRET_KEY!) as ResetPasswordTokenPayload;
+        } catch (err) {
+            throw AppError("Invalid or expired reset token", 400);
+        }
+
+        if(payload.purpose !== "FORGOT_PASSWORD") {
+            throw AppError("Invalid reset token purpose", 400);
+        }
+
+        const userId = payload.userId;
+
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { password: true },
+        });
+
+        if (!user) {
+            throw AppError("User not found", 404);
+        }
+
+        const isSamePassword = await hashMatch(newPassword, user.password);
+        if (isSamePassword) {
+            throw AppError("New password must be different from the old password", 400);
+        }
+
+        const hashedPassword = await hashing(newPassword);
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: { password: hashedPassword },
+        });
     }
 }
