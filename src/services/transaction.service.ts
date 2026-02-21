@@ -1,3 +1,4 @@
+import { addDays, addMinutes } from "date-fns";
 import { Transaction } from "../../generated/prisma/browser";
 import { prisma } from "../config/prisma-client.config";
 import AppError from "../helpers/app-error.helper";
@@ -78,6 +79,7 @@ export const transactionService = {
       data: {
         paymentProof: uploadPaymentProof.secureUrl,
         transactionStatus: "WAITING_FOR_ADMIN_CONFIRMATION",
+        expiry: addDays(new Date(), 3)
       },
     });
   },
@@ -119,7 +121,10 @@ export const transactionService = {
 
       return await tx.transaction.update({
         where: { id },
-        data: { transactionStatus: status },
+        data: {
+          transactionStatus: status,
+          
+        },
       });
     });
   },

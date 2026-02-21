@@ -3,6 +3,7 @@ import transactionRouter from "./routers/transaction.router";
 
 import cors from "cors";
 import { corsOptions } from "./config/cors.config";
+import { mainJobs } from "./jobs/main.job";
 
 const PORT: number = 8000;
 
@@ -14,6 +15,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors(corsOptions));
 
 app.use("/api/transactions", transactionRouter);
+
+mainJobs()
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error("ERROR:", err);
