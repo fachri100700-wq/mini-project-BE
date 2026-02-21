@@ -5,7 +5,7 @@ import { addMinutes } from "date-fns";
 
 export const bookingsService = {
   async get(id: string) {
-    return await prisma.booking.findFirst({
+    const booking = await prisma.booking.findFirst({
       where: {
         id,
         deletedAt: null,
@@ -37,89 +37,72 @@ export const bookingsService = {
             discAmount: true,
           },
         },
+        transactions: {
+          where: {
+            deletedAt: null
+          }
+        }  
       },
     });
+
+    return booking
   },
 
   async create({
     quantity,
-    totalPrice,
     eventId,
     ticketTypeId,
     userId,
     promoId,
   }: Pick<
     Booking,
-    | "quantity"
-    | "totalPrice"
-    | "eventId"
-    | "ticketTypeId"
-    | "userId"
-    | "promoId"
+    "quantity" | "eventId" | "ticketTypeId" | "userId" | "promoId"
   >) {
-    if (quantity <= 0) {
-      throw AppError("Quantity cannot be 0", 400);
-    }
+    if (quantity <= 0) throw AppError("Quantity minimum 1", 400);
 
     return await prisma.$transaction(async (tx) => {
-      const ticket = await tx.ticketType.findFirst({
-        where: {
-          id: ticketTypeId,
-          eventId: eventId,
-          deletedAt: null,
-        },
-        include: {
-          event: true,
-        },
+    
+      const ticket = await tx.ticketType.findUnique({
+        where: { id: ticketTypeId },
+        include: { event: true },
       });
 
-      if (!ticket) {
-        throw AppError("Ticket not found", 400);
-      }
+      if (!ticket || ticket.eventId !== eventId)
+        throw AppError("Ticket not valid", 404);
+      if (ticket.seatAvailable < quantity)
+        throw AppError("Stock ticket is empty", 400);
 
-      if (quantity > ticket.seatAvailable) {
-        throw AppError("Total booking cannot be more than seat available", 400);
-      }
-
-      let promo = null;
-      //karena typresript deteksi promoId bisa null karena "string?"
+    
+      let discountAmount = 0;
       if (promoId) {
-        promo = await tx.promotion.findFirst({
-          where: {
-            id: promoId,
-            eventId: eventId,
-            deletedAt: null,
-          },
+        const promo = await tx.promotion.findFirst({
+          where: { id: promoId, eventId, quota: { gt: 0 }, deletedAt: null },
         });
-      }
 
-      const finalPromo = promo?.discAmount ?? 0;
+        if (!promo) throw AppError("Promo is emtpy", 400);
 
-      const finalPrice = Math.max(0, quantity * ticket.price - finalPromo);
+        discountAmount = promo.discAmount; // diskon flat
 
-      await tx.ticketType.update({
-        where: {
-          id: ticketTypeId,
-          eventId: eventId,
-        },
-        data: {
-          seatAvailable: {
-            decrement: Number(quantity),
-          },
-          event: { update: { seatTotal: { decrement: Number(quantity) } } },
-        },
-      });
-
-      if (promoId) {
-        if (!promo || promo.quota <= 0) {
-          throw AppError("Promo not available", 400);
-        }
+        
         await tx.promotion.update({
           where: { id: promoId },
           data: { quota: { decrement: 1 } },
         });
       }
 
+      
+      const finalPrice = Math.max(0, quantity * ticket.price - discountAmount);
+
+     
+      await tx.ticketType.update({
+        where: { id: ticketTypeId },
+        data: {
+          seatAvailable: { decrement: Number(quantity) },
+          event: { update: { seatTotal: { decrement: Number(quantity) } } },
+        },
+      });
+
+      
       const booking = await tx.booking.create({
         data: {
           quantity: Number(quantity),
@@ -127,38 +110,23 @@ export const bookingsService = {
           eventId,
           ticketTypeId,
           userId,
-          promoId: promoId ?? null,
+          promoId: promoId || null,
         },
       });
 
-      const totalPriceBooking = await tx.booking.findFirst({
-        where: {
-          id: booking.id,
-          userId: userId,
-          deletedAt: null,
-        },
-        select: {
-          totalPrice: true,
-        },
-      });
       
-
-      if (!totalPriceBooking) {
-        throw AppError("Booking not found", 404);
-      }
-
-      await tx.transaction.create({
+      const transaction = await tx.transaction.create({
         data: {
           bookingId: booking.id,
           userId,
-          expiry: addMinutes(Date.now(), 15),
-          amountPaid: Number(totalPriceBooking.totalPrice),
+          expiry: addMinutes(new Date(), 120), 
+          amountPaid: Number(finalPrice),
           paymentProof: "",
           transactionStatus: "WAITING_FOR_PAYMENT",
         },
       });
 
-      return booking
+      return { booking, transaction };
     });
   },
 };

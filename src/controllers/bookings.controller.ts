@@ -14,12 +14,11 @@ export const bookingsController = {
   },
 
   async create(req: Request, res: Response) {
-    const { quantity, totalPrice, eventId, ticketTypeId, userId, promoId } =
+    const { quantity, eventId, ticketTypeId, userId, promoId } =
       req.body;
 
     const booking = await bookingsService.create({
       quantity,
-      totalPrice,
       eventId,
       ticketTypeId,
       userId,

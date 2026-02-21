@@ -2,12 +2,17 @@ import express, { NextFunction, Request, Response } from "express";
 import bookingRouter from "./routers/bookings.router";
 import { mainJobs } from "./jobs/main.job";
 
+import cors from "cors";
+import { corsOptions } from "./config/cors.config";
+
 const PORT: number = 8000;
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cors(corsOptions));
 
 app.use("/api/booking", bookingRouter);
 
