@@ -162,7 +162,7 @@ model Booking {
   event               Event         @relation(fields: [eventId], references: [id])
   user                User          @relation(fields: [userId], references: [id])
   ticketType          TicketType    @relation(fields: [ticketTypeId], references: [id])
-  promo               Promotion     @relation(fields: [promoId], references: [id])
+  promo               Promotion?    @relation(fields: [promoId], references: [id])
   transactions        Transaction[]
 
   createdAt           DateTime      @default(now())
