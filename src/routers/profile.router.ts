@@ -2,7 +2,7 @@ import { Router } from "express";
 import { jwtVerify } from "../middlewares/auth.middleware";
 import { profileController } from "../controllers/profile.controller";
 import { JWT_TOKEN_SECRET_KEY } from "../config/main.config";
-import { customerOnly } from "../middlewares/role.middleware";
+import { customerOnly } from "../middlewares/customerOnly.middleware";
 import { updateProfileValidator } from "../validators/profile-update.validator";
 import { expressRequestValidation } from "../middlewares/express-request-validation.middleware";
 import { changePasswordValidator } from "../validators/change-password.validator";
