@@ -1,19 +1,24 @@
+import "dotenv/config";
 import express, { NextFunction, Request, Response } from "express";
+import authRouter from './routers/auth.router';
+import profileRouter from './routers/profile.router';
+import dashboardRouter from './routers/dashboard.router';
 import bookingRouter from "./routers/bookings.router";
 import { mainJobs } from "./jobs/main.job";
-
-import cors from "cors";
+import cors from 'cors';
 import { corsOptions } from "./config/cors.config";
+import cookieParser from "cookie-parser";
+import "./config/main.config";
 
-const PORT: number = 8000;
-
+const PORT: number = 8080;
 const app = express();
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
 app.use(cors(corsOptions));
+app.use(express.json());
+app.use(cookieParser());
 
+app.use('/auth', authRouter);
+app.use('/profile', profileRouter);
+app.use('/dashboard', dashboardRouter);
 app.use("/api/bookings", bookingRouter);
 
 mainJobs()
