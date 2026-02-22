@@ -1,3 +1,5 @@
+import cloudinary from "../config/cloudinary.config";
+import type { UploadApiResponse } from "cloudinary";
 import { prisma } from "../config/prisma-client.config"
 import AppError from "../helpers/app-error.helper";
 import { hashing, hashMatch } from "../helpers/bcrypt.helper";
@@ -77,15 +79,37 @@ export const profileService = {
         });
     },
 
-    async updateProfile(userId: string, data: UpdateProfileDTO): Promise<Pick<ProfileResponseDTO, "username" | "avatarUrl">> {
+    async updateProfile(userId: string, data: UpdateProfileDTO): Promise<Pick<ProfileResponseDTO, "username">> {
         return prisma.user.update({
             where: { id: userId },
             data,
             select: {
                 username: true,
-                avatarUrl: true,
             },
         });
+    },
+
+    async updateAvatar(userId: string, fileBuffer: Buffer) {
+    if (!fileBuffer) throw AppError("No file uploaded", 400);
+
+    const uploadResult: UploadApiResponse = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+        { folder: "avatars", resource_type: "image" },
+        (error, result) => {
+            if (error || !result) reject(error || new Error("Upload failed"));
+            else resolve(result);
+        }
+        );
+        stream.end(fileBuffer);
+    });
+
+    const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: { avatarUrl: uploadResult.secure_url },
+        select: { avatarUrl: true },
+    });
+
+    return updatedUser;
     },
 
     async changePassword(userId: string, currentPassword: string, newPassword: string) {

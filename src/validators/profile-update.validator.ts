@@ -7,7 +7,4 @@ export const updateProfileValidator = [
     .isLength({ min: 3, max: 30 })
     .withMessage("Username must be between 3 and 30 characters"),
 
-    body("avatarUrl")
-    .optional()
-    .isURL().withMessage("Avatar URL must be a valid URL"),
 ]

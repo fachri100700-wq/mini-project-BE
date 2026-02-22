@@ -1,9 +1,11 @@
+import "dotenv/config";
 import express, { NextFunction, Request, Response } from "express";
 import authRouter from './routers/auth.router';
 import profileRouter from './routers/profile.router';
 import cors from 'cors';
 import { corsOptions } from "./config/cors.config";
 import cookieParser from "cookie-parser";
+import "./config/main.config";
 
 const PORT: number = 8080;
 const app = express();

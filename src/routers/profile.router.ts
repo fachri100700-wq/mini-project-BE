@@ -6,6 +6,7 @@ import { customerOnly } from "../middlewares/role.middleware";
 import { updateProfileValidator } from "../validators/profile-update.validator";
 import { expressRequestValidation } from "../middlewares/express-request-validation.middleware";
 import { changePasswordValidator } from "../validators/change-password.validator";
+import upload from "../middlewares/multer.middleware";
 
 const router = Router();
 
@@ -21,6 +22,8 @@ router.patch('/',
     expressRequestValidation,
     profileController.updateProfile
 );
+
+router.patch("/avatar", upload.single("avatar"), profileController.updateAvatar);
 
 router.patch('/change-password',
     changePasswordValidator,
