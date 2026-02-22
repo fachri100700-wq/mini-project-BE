@@ -1,5 +1,5 @@
 import { body } from "express-validator";
-import { EventCategory, EventType } from "../generated/prisma/client";
+import { EventCategory, EventType } from "../../generated/prisma/client";
 
 export const updateOrganizerEventValidator = [
   body("eventName")

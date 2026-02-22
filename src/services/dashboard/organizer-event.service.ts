@@ -1,3 +1,4 @@
+import { EventCategory, EventType } from "../../../generated/prisma/enums";
 import { prisma } from "../../config/prisma-client.config";
 import AppError from "../../helpers/app-error.helper";
 
@@ -9,8 +10,8 @@ type UpdateEventDTO = {
   location?: string;
   description?: string;
   seatTotal?: number;
-  eventType?: string;
-  eventCategory?: string;
+  eventType?: EventType;
+  eventCategory?: EventCategory;
 };
 
 export const organizerEventService = {

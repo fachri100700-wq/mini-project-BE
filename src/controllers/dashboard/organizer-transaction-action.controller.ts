@@ -3,9 +3,9 @@ import { organizerTransactionActionService } from "../../services/dashboard/orga
 
 export const organizerTransactionActionController = {
   async updateTransaction(req: Request, res: Response) {
-    const { userId } = res.locals.payload;
-    const { transactionId } = req.params;
-    const { action } = req.body;
+    const { userId } = res?.locals?.payload;
+    const transactionId = req?.params?.transactionId as string;
+    const { action } = req?.body;
 
     const data =
       await organizerTransactionActionService.updateStatus(

@@ -11,6 +11,7 @@ import { organizerTransactionController } from "../controllers/dashboard/organiz
 import { transactionActionValidator } from "../validators/transaction-action-validator";
 import { organizerTransactionActionController } from "../controllers/dashboard/organizer-transaction-action.controller";
 import { organizerAttendeeController } from "../controllers/dashboard/organizer-attendee.controller";
+import { organizerStatisticController } from "../controllers/dashboard/organizer-statistic.controller";
 
 
 const router = Router();
@@ -54,6 +55,11 @@ router.patch(
   transactionActionValidator,
   expressRequestValidation,
   organizerTransactionActionController.updateTransaction
+);
+
+router.get(
+  "/statistics",
+  organizerStatisticController.getStatistics
 );
 
 export default router;
