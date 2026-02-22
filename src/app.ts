@@ -2,6 +2,7 @@ import "dotenv/config";
 import express, { NextFunction, Request, Response } from "express";
 import authRouter from './routers/auth.router';
 import profileRouter from './routers/profile.router';
+import dashboardRouter from './routers/dashboard.router';
 import cors from 'cors';
 import { corsOptions } from "./config/cors.config";
 import cookieParser from "cookie-parser";
@@ -15,6 +16,7 @@ app.use(cookieParser());
 
 app.use('/auth', authRouter);
 app.use('/profile', profileRouter);
+app.use('/dashboard', dashboardRouter);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.expose === true ? err.statusCode : 500;
