@@ -4,6 +4,7 @@ import authRouter from './routers/auth.router';
 import profileRouter from './routers/profile.router';
 import dashboardRouter from './routers/dashboard.router';
 import bookingRouter from "./routers/bookings.router";
+import transactionRouter from "./routers/transaction.router";
 import { mainJobs } from "./jobs/main.job";
 import cors from 'cors';
 import { corsOptions } from "./config/cors.config";
@@ -20,6 +21,7 @@ app.use('/auth', authRouter);
 app.use('/profile', profileRouter);
 app.use('/dashboard', dashboardRouter);
 app.use("/api/bookings", bookingRouter);
+app.use("/api/transactions", transactionRouter);
 
 mainJobs()
 
