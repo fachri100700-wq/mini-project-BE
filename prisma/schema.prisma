@@ -153,7 +153,7 @@ model Booking {
   eventId             String
   userId              String
   ticketTypeId        String
-  promoId             String
+  promoId             String?
 
   quantity            Int
   totalPrice          Int
@@ -178,6 +178,7 @@ model Transaction {
   bookingId           String
   userId              String
   amountPaid          Int
+  expiry              DateTime
   transactionStatus   TransactionStatus   @default(WAITING_FOR_PAYMENT)
   paymentProof        String?
 

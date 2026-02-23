@@ -1,8 +1,16 @@
+import { connect } from "node:http2";
 import { Booking } from "../../generated/prisma/client";
 import { prisma } from "../config/prisma-client.config";
 import AppError from "../helpers/app-error.helper";
 import { addMinutes } from "date-fns";
 
+type CreateBookingInput = {
+  quantity: number;
+  eventId: string;
+  ticketTypeId: string;
+  userId: string;
+  promoId?: string | null;
+};
 export const bookingsService = {
   async get(id: string) {
     const booking = await prisma.booking.findFirst({
@@ -41,7 +49,7 @@ export const bookingsService = {
           where: {
             deletedAt: null
           }
-        }  
+        }
       },
     });
 
@@ -54,14 +62,11 @@ export const bookingsService = {
     ticketTypeId,
     userId,
     promoId,
-  }: Pick<
-    Booking,
-    "quantity" | "eventId" | "ticketTypeId" | "userId" | "promoId"
-  >) {
+  }: CreateBookingInput) {
     if (quantity <= 0) throw AppError("Quantity minimum 1", 400);
 
     return await prisma.$transaction(async (tx) => {
-    
+
       const ticket = await tx.ticketType.findUnique({
         where: { id: ticketTypeId },
         include: { event: true },
@@ -72,7 +77,7 @@ export const bookingsService = {
       if (ticket.seatAvailable < quantity)
         throw AppError("Stock ticket is empty", 400);
 
-    
+
       let discountAmount = 0;
       if (promoId) {
         const promo = await tx.promotion.findFirst({
@@ -83,17 +88,17 @@ export const bookingsService = {
 
         discountAmount = promo.discAmount; // diskon flat
 
-        
+
         await tx.promotion.update({
           where: { id: promoId },
           data: { quota: { decrement: 1 } },
         });
       }
 
-      
+
       const finalPrice = Math.max(0, quantity * ticket.price - discountAmount);
 
-     
+
       await tx.ticketType.update({
         where: { id: ticketTypeId },
         data: {
@@ -102,7 +107,7 @@ export const bookingsService = {
         },
       });
 
-      
+
       const booking = await tx.booking.create({
         data: {
           quantity: Number(quantity),
@@ -110,16 +115,16 @@ export const bookingsService = {
           eventId,
           ticketTypeId,
           userId,
-          promoId: promoId ?? undefined,
+          promoId: promoId || null,
         },
       });
 
-      
+
       const transaction = await tx.transaction.create({
         data: {
           bookingId: booking.id,
           userId,
-          expiry: addMinutes(new Date(), 120), 
+          expiry: addMinutes(new Date(), 120),
           amountPaid: Number(finalPrice),
           paymentProof: "",
           transactionStatus: "WAITING_FOR_PAYMENT",

@@ -8,7 +8,7 @@ import { customerOnly } from "../middlewares/customerOnly.middleware";
 
 const router = Router()
 
-router.get('/:id',jwtVerify(JWT_TOKEN_SECRET_KEY!),customerOnly, bookingsController.get)
-router.post('/',jwtVerify(JWT_TOKEN_SECRET_KEY!),customerOnly, createBookingValidator, expressRequestValidation, bookingsController.create)
+router.get('/:id',jwtVerify(JWT_TOKEN_SECRET_KEY!), customerOnly, bookingsController.get)
+router.post('/',jwtVerify(JWT_TOKEN_SECRET_KEY!), customerOnly, createBookingValidator, expressRequestValidation, bookingsController.create)
 
 export default router

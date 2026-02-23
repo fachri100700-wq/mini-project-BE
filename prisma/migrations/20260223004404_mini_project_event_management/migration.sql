@@ -46,7 +46,6 @@ CREATE TABLE "events" (
     "eventType" "EventType" NOT NULL,
     "eventCategory" "EventCategory" NOT NULL,
     "userId" TEXT NOT NULL,
-    "ticketId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -60,6 +59,7 @@ CREATE TABLE "ticket_types" (
     "ticketType" VARCHAR(10) NOT NULL,
     "price" INTEGER NOT NULL,
     "seatAvailable" INTEGER NOT NULL,
+    "eventId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -89,6 +89,7 @@ CREATE TABLE "bookings" (
     "id" TEXT NOT NULL,
     "eventId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "ticketTypeId" TEXT NOT NULL,
     "promoId" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL,
     "totalPrice" INTEGER NOT NULL,
@@ -105,8 +106,9 @@ CREATE TABLE "transactions" (
     "bookingId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "amountPaid" INTEGER NOT NULL,
-    "transactionStatus" "TransactionStatus" NOT NULL,
-    "paymentProof" TEXT NOT NULL,
+    "expiry" TIMESTAMP(3) NOT NULL,
+    "transactionStatus" "TransactionStatus" NOT NULL DEFAULT 'WAITING_FOR_PAYMENT',
+    "paymentProof" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -174,7 +176,7 @@ ALTER TABLE "users" ADD CONSTRAINT "users_referredById_fkey" FOREIGN KEY ("refer
 ALTER TABLE "events" ADD CONSTRAINT "events_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "events" ADD CONSTRAINT "events_ticketId_fkey" FOREIGN KEY ("ticketId") REFERENCES "ticket_types"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ticket_types" ADD CONSTRAINT "ticket_types_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "promotions" ADD CONSTRAINT "promotions_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -187,6 +189,9 @@ ALTER TABLE "bookings" ADD CONSTRAINT "bookings_eventId_fkey" FOREIGN KEY ("even
 
 -- AddForeignKey
 ALTER TABLE "bookings" ADD CONSTRAINT "bookings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bookings" ADD CONSTRAINT "bookings_ticketTypeId_fkey" FOREIGN KEY ("ticketTypeId") REFERENCES "ticket_types"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "bookings" ADD CONSTRAINT "bookings_promoId_fkey" FOREIGN KEY ("promoId") REFERENCES "promotions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

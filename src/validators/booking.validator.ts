@@ -18,7 +18,7 @@ export const createBookingValidator = [
     .optional({ nullable: true })
     .isUUID().withMessage("Invalid Promo ID format"),
 
-  body("userId")
+  /* body("userId")
     .notEmpty().withMessage("User ID is required")
-    .isUUID().withMessage("Invalid User ID format"),
+    .isUUID().withMessage("Invalid User ID format"), */
 ]
