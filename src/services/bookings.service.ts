@@ -1,8 +1,16 @@
+import { connect } from "node:http2";
 import { Booking } from "../../generated/prisma/client";
 import { prisma } from "../config/prisma-client.config";
 import AppError from "../helpers/app-error.helper";
 import { addMinutes } from "date-fns";
 
+type CreateBookingInput = {
+  quantity: number;
+  eventId: string;
+  ticketTypeId: string;
+  userId: string;
+  promoId?: string;
+};
 export const bookingsService = {
   async get(id: string) {
     const booking = await prisma.booking.findFirst({
@@ -54,10 +62,7 @@ export const bookingsService = {
     ticketTypeId,
     userId,
     promoId,
-  }: Pick<
-    Booking,
-    "quantity" | "eventId" | "ticketTypeId" | "userId" | "promoId"
-  >) {
+  }: CreateBookingInput) {
     if (quantity <= 0) throw AppError("Quantity minimum 1", 400);
 
     return await prisma.$transaction(async (tx) => {
@@ -107,10 +112,14 @@ export const bookingsService = {
         data: {
           quantity: Number(quantity),
           totalPrice: Number(finalPrice),
-          eventId,
-          ticketTypeId,
-          userId,
-          promoId: promoId ?? undefined,
+          event: { connect: { id: eventId } },
+          ticketType: { connect: { id: ticketTypeId } },
+          user: { connect: { id: userId } },
+          ...(promoId && {
+            promo: {
+              connect: { id: promoId },
+            },
+          }),
         },
       });
 

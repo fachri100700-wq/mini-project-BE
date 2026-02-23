@@ -14,26 +14,26 @@ export const eventsController = {
     });
   },
 
- async getByFilter(req: Request, res: Response) {
-  const { search, category, type } = req.query;
-  
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
+  async getByFilter(req: Request, res: Response) {
+    const { search, category, type } = req.query;
 
-  const { events, totalEvents, totalPage } = await eventsServices.getByFilter({
-    search: search as string,
-    category: category as string,
-    type: type as string,
-    page,
-    limit,
-  });
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
 
-  res.status(200).json({
-    success: true,
-    message: `Get event with filter success`,
-    data: events, totalEvents, totalPage
-  });
-},
+    const { events, totalEvents, totalPage } = await eventsServices.getByFilter({
+      search: search as string,
+      category: category as string,
+      type: type as string,
+      page,
+      limit,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Get event with filter success`,
+      data: events, totalEvents, totalPage
+    });
+  },
 
   async create(req: Request, res: Response) {
     const {
@@ -45,7 +45,6 @@ export const eventsController = {
       seatTotal,
       eventType,
       eventCategory,
-      userId,
       promoName,
       promoStartDate,
       promoEndDate,
@@ -57,6 +56,7 @@ export const eventsController = {
       eventId
     } = req.body;
 
+    const userId = res.locals.payload.userId;
     const file = req.file as Express.Multer.File;
 
     const event = await eventsServices.create(file, {
@@ -99,9 +99,9 @@ export const eventsController = {
       seatTotal,
       eventType,
       eventCategory,
-      userId,
     } = req.body;
 
+    const userId = res.locals.payload.userId;
     const file = req.file as Express.Multer.File;
 
     const event = await eventsServices.update(id as string, file, {

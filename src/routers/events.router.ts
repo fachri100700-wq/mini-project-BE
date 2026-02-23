@@ -26,13 +26,15 @@ router.post(
     if (typeof req.body.ticketType === 'string') {
       req.body.ticketType = JSON.parse(req.body.ticketType);
     }
-    next();},
+    next();
+  },
   createEventValidator,
   expressRequestValidation,
   eventsController.create,
 );
 router.put(
   "/:id",
+  jwtVerify(JWT_TOKEN_SECRET_KEY!),
   multerUpload(
     "src/uploads",
     "IMG-MENU",

@@ -1,3 +1,4 @@
+
 import { Event } from "../../generated/prisma/client";
 import { EventCategory, EventType } from "../../generated/prisma/enums";
 import { prisma } from "../config/prisma-client.config";
@@ -117,6 +118,7 @@ export const eventsServices = {
     const uploaded = await cloudinaryUpload(file.buffer);
 
     return await prisma.$transaction(async (tx) => {
+  
       const createdEvent = await tx.event.create({
         data: {
           eventName,
@@ -126,9 +128,9 @@ export const eventsServices = {
           location,
           description,
           seatTotal: Number(seatTotal),
-          eventType,
           eventCategory,
-          userId: "87a022c5-5e12-484a-a3d8-4d7e68c9943c",
+          eventType,
+          userId,
         },
       });
 
@@ -137,7 +139,6 @@ export const eventsServices = {
       
       const tickets =
         typeof ticketType === "string" ? JSON.parse(ticketType) : ticketType;
-
       
       const totalIncomingSeats = tickets.reduce(
         (sum: number, t: any) => sum + Number(t.quantity),
@@ -277,9 +278,7 @@ export const eventsServices = {
         seatTotal: Number(seatTotal),
         eventType,
         eventCategory,
-        user: {
-          connect: { id: userId },
-        },
+        userId,
       },
     });
   },
