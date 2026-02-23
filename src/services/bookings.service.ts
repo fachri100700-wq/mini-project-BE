@@ -110,7 +110,7 @@ export const bookingsService = {
           eventId,
           ticketTypeId,
           userId,
-          promoId: promoId || null,
+          promoId: promoId ?? undefined,
         },
       });
 
