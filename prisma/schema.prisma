@@ -178,6 +178,7 @@ model Transaction {
   bookingId           String
   userId              String
   amountPaid          Int
+  expiry              DateTime
   transactionStatus   TransactionStatus   @default(WAITING_FOR_PAYMENT)
   paymentProof        String?
 
