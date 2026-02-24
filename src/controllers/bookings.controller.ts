@@ -14,15 +14,17 @@ export const bookingsController = {
   },
 
   async create(req: Request, res: Response) {
-    const { quantity, eventId, ticketTypeId, userId, promoId } =
+    const { quantity, eventId, ticketTypeId, promoId } =
       req.body;
+
+    const userId = res.locals.payload.userId;
 
     const booking = await bookingsService.create({
       quantity,
       eventId,
       ticketTypeId,
       userId,
-      promoId,
+      promoId: promoId ?? undefined,
     });
 
     res.status(200).json({
