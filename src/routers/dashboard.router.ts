@@ -28,6 +28,8 @@ router.patch(
   organizerProfileController.updateProfile
 );
 
+router.get("/events", organizerEventController.getEvents);
+
 router.get(
   "/events/:eventId",
   organizerEventController.getEvent
