@@ -27,10 +27,12 @@ export const bookingsService = {
         },
         event: {
           select: {
+            id: true,
             eventName: true,
             startDate: true,
             endDate: true,
             location: true,
+            imageUrl: true,
           },
         },
         ticketType: {
