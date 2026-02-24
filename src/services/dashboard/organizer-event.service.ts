@@ -15,6 +15,18 @@ type UpdateEventDTO = {
 };
 
 export const organizerEventService = {
+    async getEventsByOrganizer(organizerId: string) {
+    return prisma.event.findMany({
+      where: {
+        userId: organizerId,
+        deletedAt: null,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  },
+
   async getEventById(eventId: string, organizerId: string) {
     const event = await prisma.event.findFirst({
       where: {
