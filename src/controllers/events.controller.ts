@@ -15,7 +15,7 @@ export const eventsController = {
   },
 
   async getByFilter(req: Request, res: Response) {
-    const { search, category, type } = req.query;
+    const { search, category, type, location } = req.query;
 
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -24,6 +24,7 @@ export const eventsController = {
       search: search as string,
       category: category as string,
       type: type as string,
+      location: location as string,
       page,
       limit,
     });

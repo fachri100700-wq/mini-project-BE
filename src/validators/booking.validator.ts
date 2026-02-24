@@ -18,6 +18,14 @@ export const createBookingValidator = [
     .optional({ nullable: true })
     .isUUID().withMessage("Invalid Promo ID format"),
 
+  body("couponId")
+    .optional({ nullable: true })
+    .isUUID().withMessage("Invalid Coupon ID format"),
+
+  body("referralRewardId")
+    .optional({ nullable: true })
+    .isUUID().withMessage("Invalid Referral Reward ID format"),
+
   /* body("userId")
     .notEmpty().withMessage("User ID is required")
     .isUUID().withMessage("Invalid User ID format"), */

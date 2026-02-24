@@ -14,7 +14,7 @@ export const bookingsController = {
   },
 
   async create(req: Request, res: Response) {
-    const { quantity, eventId, ticketTypeId, promoId } =
+    const { quantity, eventId, ticketTypeId, promoId, couponId, referralRewardId } =
       req.body;
 
     const userId = res.locals.payload.userId;
@@ -25,6 +25,8 @@ export const bookingsController = {
       ticketTypeId,
       userId,
       promoId: promoId ?? undefined,
+      couponId: couponId ?? undefined,
+      referralRewardId: referralRewardId ?? undefined,
     });
 
     res.status(200).json({
