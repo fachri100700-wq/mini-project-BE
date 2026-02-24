@@ -12,7 +12,7 @@ export const createBookingValidator = [
 
   body("quantity")
     .notEmpty().withMessage("Quantity is required")
-    .isInt({ min: 1 }).withMessage("You must select at least 1 ticket"),
+    .isInt({ min: 1, max: 10 }).withMessage("You can only purchase between 1 and 10 tickets"),
 
   body("promoId")
     .optional({ nullable: true })
