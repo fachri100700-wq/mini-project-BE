@@ -9,6 +9,7 @@ interface IFilterEvent {
   search?: string;
   category?: string;
   type?: string;
+  location?: string;
   page: number;
   limit: number;
 }
@@ -24,13 +25,13 @@ interface CreateEvent {
   eventCategory: EventCategory;
   userId: string;
 
-  
+
   ticketType: string;
   price: number;
   seatAvailable: number;
   eventId: string
 
-  
+
   promoName?: string;
   promoStartDate?: Date;
   promoEndDate?: Date;
@@ -55,36 +56,37 @@ export const eventsServices = {
     return event
   },
 
-  async getByFilter({ search, category, type, page, limit }: IFilterEvent) {
-  const offset = (page - 1) * limit;
+  async getByFilter({ search, category, type, location, page, limit }: IFilterEvent) {
+    const offset = (page - 1) * limit;
 
-  const whereClause: any = {
-    eventName: search ? { contains: search, mode: "insensitive" } : undefined,
-    eventCategory: category ? (category.toUpperCase() as any) : undefined,
-    eventType: type ? (type.toUpperCase() as any) : undefined,
-    deletedAt: null,
-  };
+    const whereClause: any = {
+      eventName: search ? { contains: search, mode: "insensitive" } : undefined,
+      eventCategory: category ? (category.toUpperCase() as any) : undefined,
+      eventType: type ? (type.toUpperCase() as any) : undefined,
+      location: location ? { contains: location, mode: "insensitive" } : undefined,
+      deletedAt: null,
+    };
 
-  const [events, totalEvents] = await Promise.all([
-    prisma.event.findMany({
-      where: whereClause,
-      skip: offset,
-      take: limit,
-    }),
-    prisma.event.count({
-      where: whereClause,
-    }),
-  ]);
+    const [events, totalEvents] = await Promise.all([
+      prisma.event.findMany({
+        where: whereClause,
+        skip: offset,
+        take: limit,
+      }),
+      prisma.event.count({
+        where: whereClause,
+      }),
+    ]);
 
 
-  const totalPage = Math.ceil(totalEvents / limit);
+    const totalPage = Math.ceil(totalEvents / limit);
 
-  return {
-    events,
-    totalEvents,
-    totalPage,
-  };
-},
+    return {
+      events,
+      totalEvents,
+      totalPage,
+    };
+  },
 
 
   async create(
@@ -108,9 +110,9 @@ export const eventsServices = {
       price,
       seatAvailable,
       eventId
-      
+
     }: CreateEvent
-    
+
   ) {
     if (!file) {
       throw AppError("Image is required", 400);
@@ -118,7 +120,7 @@ export const eventsServices = {
     const uploaded = await cloudinaryUpload(file.buffer);
 
     return await prisma.$transaction(async (tx) => {
-  
+
       const createdEvent = await tx.event.create({
         data: {
           eventName,
@@ -136,10 +138,10 @@ export const eventsServices = {
 
       /* =================== TICKET TYPE LOGIC ======================= */
 
-      
+
       const tickets =
         typeof ticketType === "string" ? JSON.parse(ticketType) : ticketType;
-      
+
       const totalIncomingSeats = tickets.reduce(
         (sum: number, t: any) => sum + Number(t.quantity),
         0,
@@ -152,7 +154,7 @@ export const eventsServices = {
         );
       }
 
-      
+
       const ticketNames = tickets.map((t: any) => t.name.toLowerCase().trim());
       const hasDuplicate = ticketNames.some(
         (name: string, index: number) => ticketNames.indexOf(name) !== index,
@@ -162,7 +164,7 @@ export const eventsServices = {
         throw AppError("There cannot be twin ticket names in one event", 400);
       }
 
-      
+
       const createdType = await tx.ticketType.createMany({
         data: tickets.map((t: any) => ({
           ticketType: t.name,
@@ -174,11 +176,11 @@ export const eventsServices = {
 
       /* ======================== PROMOTION LOGIC ======================== */
 
-      
+
       let createdPromotion = null;
 
       if (promoName) {
-        
+
         const startPromo = new Date(promoStartDate!);
         const endPromo = new Date(promoEndDate!);
         const eventStart = new Date(createdEvent.startDate);
@@ -192,7 +194,7 @@ export const eventsServices = {
           );
         }
 
-       
+
         const duplicatePromo = await tx.promotion.findFirst({
           where: {
             promoName: String(promoName),
@@ -204,7 +206,7 @@ export const eventsServices = {
         if (duplicatePromo)
           throw AppError("This promo name is already taken", 400);
 
-        
+
         createdPromotion = await tx.promotion.create({
           data: {
             promoName: String(promoName),

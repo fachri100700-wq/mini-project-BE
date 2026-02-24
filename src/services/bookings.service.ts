@@ -1,4 +1,3 @@
-import { connect } from "node:http2";
 import { Booking } from "../../generated/prisma/client";
 import { prisma } from "../config/prisma-client.config";
 import AppError from "../helpers/app-error.helper";
@@ -10,6 +9,8 @@ type CreateBookingInput = {
   ticketTypeId: string;
   userId: string;
   promoId?: string | null;
+  couponId?: string | null;
+  referralRewardId?: string | null;
 };
 export const bookingsService = {
   async get(id: string) {
@@ -64,6 +65,8 @@ export const bookingsService = {
     ticketTypeId,
     userId,
     promoId,
+    couponId,
+    referralRewardId,
   }: CreateBookingInput) {
     if (quantity <= 0) throw AppError("Quantity minimum 1", 400);
 
@@ -97,8 +100,52 @@ export const bookingsService = {
         });
       }
 
+      // Coupon discount
+      let couponDiscount = 0;
+      if (couponId) {
+        const coupon = await tx.coupon.findFirst({
+          where: {
+            id: couponId,
+            userId,
+            isUsed: false,
+            expiredDate: { gt: new Date() },
+          },
+        });
 
-      const finalPrice = Math.max(0, quantity * ticket.price - discountAmount);
+        if (!coupon) throw AppError("Coupon not valid or already used", 400);
+
+        couponDiscount = coupon.discount;
+
+        await tx.coupon.update({
+          where: { id: couponId },
+          data: { isUsed: true, usedAt: new Date() },
+        });
+      }
+
+      // Referral reward discount
+      let rewardDiscount = 0;
+      if (referralRewardId) {
+        const reward = await tx.referralReward.findFirst({
+          where: {
+            id: referralRewardId,
+            userId,
+            expireDate: { gt: new Date() },
+            points: { gt: 0 },
+          },
+        });
+
+        if (!reward) throw AppError("Referral reward not valid or expired", 400);
+
+        rewardDiscount = reward.points;
+
+        await tx.referralReward.update({
+          where: { id: referralRewardId },
+          data: { points: 0 },
+        });
+      }
+
+
+      const finalPrice = Math.max(0, quantity * ticket.price - discountAmount - couponDiscount - rewardDiscount);
 
 
       await tx.ticketType.update({
