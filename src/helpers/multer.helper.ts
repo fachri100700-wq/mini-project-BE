@@ -43,5 +43,5 @@ export function multerUpload(
 
         cb(null, true)
     }
-    return multer({storage, fileFilter, limits: {fileSize: 1 * 1024 * 1024}})
+    return multer({storage, fileFilter, limits: {fileSize: 5 * 1024 * 1024}})
 }
