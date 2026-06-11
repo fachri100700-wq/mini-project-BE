@@ -1,16 +1,24 @@
-import { PrismaClient, Role, EventType, EventCategory } from "../../generated/prisma/client";
+import { PrismaClient, Role } from "../../generated/prisma/client";
 import { faker } from "@faker-js/faker";
+import { seedEvents } from "./event/event.seed";
+import { seedTicketTypes } from "./ticketType/ticketType.seed";
+import { seedPromotions } from "./promotion/promotion.seed";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // Clear existing data
+  // Clear existing data (order matters due to foreign key constraints)
+  await prisma.transaction.deleteMany();
   await prisma.booking.deleteMany();
+  await prisma.review.deleteMany();
+  await prisma.promotion.deleteMany();
   await prisma.ticketType.deleteMany();
   await prisma.event.deleteMany();
+  await prisma.coupon.deleteMany();
+  await prisma.referralReward.deleteMany();
   await prisma.user.deleteMany();
 
-  const users = [];
+  const users: { id: string; role: string }[] = [];
 
   // Create 30 users
   for (let i = 0; i < 30; i++) {
@@ -28,51 +36,23 @@ async function main() {
       },
     });
 
-    users.push(user);
+    users.push({ id: user.id, role: user.role });
   }
 
-  const events = [];
+  console.log(`Seeded ${users.length} users.`);
 
-  // Create 30 events
-  for (let i = 0; i < 30; i++) {
-    const organizers = users.filter(u => u.role === Role.organizer);
-    const organizer = faker.helpers.arrayElement(organizers);
+  const organizerIds = users.filter(u => u.role === Role.organizer).map(u => u.id);
 
-    const startDate = faker.date.future();
-    const endDate = faker.date.future({ refDate: startDate });
+  // Seed Events (requires organizers)
+  const events = await seedEvents(organizerIds);
 
-    const event = await prisma.event.create({
-      data: {
-        eventName: faker.lorem.words(3).slice(0, 100),
-        startDate,
-        endDate,
-        imageUrl: faker.image.urlLoremFlickr({ category: "city" }),
-        location: faker.location.city().slice(0, 100),
-        description: faker.lorem.sentence().slice(0, 150),
-        seatTotal: faker.number.int({ min: 50, max: 500 }),
-        eventType: faker.helpers.arrayElement([EventType.FREE, EventType.PAID]),
-        eventCategory: faker.helpers.arrayElement(Object.values(EventCategory)),
-        userId: organizer.id,
-      },
-    });
+  // Seed TicketTypes (requires events)
+  await seedTicketTypes(events);
 
-    events.push(event);
+  // Seed Promotions only for some events (requires events & organizers)
+  await seedPromotions(events, organizerIds);
 
-    // Create 1-3 TicketTypes per event
-    const ticketTypesCount = faker.number.int({ min: 1, max: 3 });
-    for (let j = 0; j < ticketTypesCount; j++) {
-      await prisma.ticketType.create({
-        data: {
-          ticketType: faker.helpers.arrayElement(["VIP", "REGULAR", "EARLY"]).slice(0, 10),
-          price: faker.number.int({ min: 10, max: 200 }),
-          seatAvailable: faker.number.int({ min: 20, max: event.seatTotal }),
-          eventId: event.id,
-        },
-      });
-    }
-  }
-
-  console.log("Seed completed: 30 users, 30 events, and ticket types created.");
+  console.log("Seed completed: users, events, ticket types, and promotions created.");
 }
 
 main()
