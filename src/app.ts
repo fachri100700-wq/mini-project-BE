@@ -27,7 +27,11 @@ app.use("/transactions", transactionRouter);
 app.use("/reviews", reviewsRouter);
 app.use("/events", eventsRouter);
 
-mainJobs()
+// Hanya jalankan cron job di environment non-serverless (development)
+// node-cron tidak kompatibel dengan Vercel serverless function
+if (process.env.NODE_ENV !== 'production') {
+  mainJobs();
+}
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error("ERROR:", err);
