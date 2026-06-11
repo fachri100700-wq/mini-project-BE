@@ -15,7 +15,12 @@ export const corsOptions = {
             callback(null, true);
             return;
         }
-        if(whiteList.includes(origin)){
+        // Allow all subdomains of vercel.app
+        if (origin.includes('.vercel.app')) {
+            callback(null, true);
+            return;
+        }
+        if(whiteList.includes(origin) || whiteList.includes(origin.replace(/\/$/, ''))){
             callback(null, true);
         }else{
             callback(new Error('Origin not allowed by CORS'));
