@@ -5,9 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon",
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "postinstall": "prisma generate"
+    "build": "prisma generate && tsc",
+    "start": "node dist/server.js"
   },
   "prisma": {
     "seed": "ts-node prisma/seed/main.seed.ts"
