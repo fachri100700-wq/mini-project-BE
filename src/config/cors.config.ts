@@ -1,5 +1,7 @@
+import { NEXT_URL } from "./main.config";
+
 const whiteList = [
-    'http://localhost:5173',
+    'http://localhost:5173', NEXT_URL,
 ];
 
 export const corsOptions = {
