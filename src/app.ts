@@ -41,6 +41,11 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Application running on port ${PORT}`);
-});
+// Hanya jalankan listen() saat development lokal, bukan di Vercel (serverless)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Application running on port ${PORT}`);
+  });
+}
+
+export default app;
