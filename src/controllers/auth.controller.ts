@@ -3,7 +3,7 @@ import { authService } from "../services/auth.service";
 import { LoginDTO, RegisterDTO } from "../types/auth.dto";
 
 export const authController = {
-    async register(req: Request, res: Response){
+    async register(req: Request, res: Response) {
         const body = req.body as RegisterDTO;
 
         await authService.register(body)
@@ -19,10 +19,10 @@ export const authController = {
         })
     },
 
-    async login(req: Request, res: Response){
+    async login(req: Request, res: Response) {
         const body = req.body as LoginDTO;
 
-        const { username, Role, token } = await authService.login(body)
+        const { id, username, Role, token } = await authService.login(body)
 
         res.cookie('accessToken', token, {
             httpOnly: true,
@@ -35,28 +35,30 @@ export const authController = {
             status: true,
             message: 'User logged in successfully',
             data: {
+                id,
                 username,
-                Role
+                role: Role
             }
         })
     },
 
-    async session(req: Request, res: Response){
+    async session(req: Request, res: Response) {
         const { userId } = res?.locals?.payload;
 
-        const {username, role} = await authService?.session( userId );
+        const { id, username, role } = await authService?.session(userId);
 
         res.status(200).json({
             success: true,
             message: 'User auth is successfull',
             data: {
+                id,
                 username,
                 role,
             }
         })
     },
 
-    async forgotPassword(req: Request, res: Response, next: NextFunction){
+    async forgotPassword(req: Request, res: Response, next: NextFunction) {
         try {
             const { email } = req.body;
 
@@ -70,7 +72,7 @@ export const authController = {
         }
     },
 
-    async resetPassword(req: Request, res: Response, next: NextFunction){
+    async resetPassword(req: Request, res: Response, next: NextFunction) {
         try {
             const { token, newPassword } = req.body;
 
@@ -83,5 +85,18 @@ export const authController = {
         } catch (error) {
             next(error);
         }
+    },
+
+    async logout(req: Request, res: Response) {
+        res.clearCookie('accessToken', {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            path: '/'
+        });
+        res.status(200).json({
+            success: true,
+            message: 'Logged out successfully'
+        });
     },
 }

@@ -3,7 +3,7 @@ import { prisma } from "../config/prisma-client.config";
 import AppError from "../helpers/app-error.helper";
 
 export const reviewsService = {
-  async get(eventId: string) {
+  async get(eventId: string, userId?: string) {
     if (!eventId) {
       throw AppError("Event ID is required", 400);
     }
@@ -23,6 +23,17 @@ export const reviewsService = {
       orderBy: { createdAt: "desc" },
     });
 
+    let transactionDone = null;
+    if (userId) {
+      transactionDone = await prisma.transaction.findFirst({
+        where: {
+          booking: { eventId },
+          userId,
+          transactionStatus: "DONE",
+        },
+      });
+    }
+
     const stats = await prisma.review.aggregate({
       where: { eventId },
       _avg: {
@@ -39,6 +50,7 @@ export const reviewsService = {
         : 0,
       totalReviews: stats._count.id,
       data: reviews,
+      transactionDone,
     };
   },
 
@@ -64,7 +76,7 @@ export const reviewsService = {
       throw AppError("Buy the ticket first then review", 400);
     }
 
-    const alreadyReview = await prisma.review.findFirst({
+    /* const alreadyReview = await prisma.review.findFirst({
       where: {
         userId,
         eventId,
@@ -73,7 +85,7 @@ export const reviewsService = {
 
     if (alreadyReview) {
       throw AppError("only 1 review is allowed for each event", 400);
-    }
+    } */
 
     return await prisma.review.create({
       data: {

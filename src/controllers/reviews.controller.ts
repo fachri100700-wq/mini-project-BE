@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import { reviewsService } from "../services/reviews.service";
 
 export const reviewsController = {
-    async get(req: Request, res: Response){
-        const {eventId} = req.params
+    async get(req: Request, res: Response) {
+        const { eventId } = req.params
 
         const review = await reviewsService.get(eventId as string)
 
@@ -14,14 +14,15 @@ export const reviewsController = {
         })
     },
 
-    async create(req: Request, res: Response){
-        const {eventId, userId, feedback, rating} = req.body
+    async create(req: Request, res: Response) {
+        const { eventId, feedback, rating } = req.body
+        const userId = res.locals.payload.userId
 
         const review = await reviewsService.create({
-          eventId,
-          userId, 
-          feedback,
-          rating,
+            eventId,
+            userId,
+            feedback,
+            rating,
         });
 
         res.status(201).json({
@@ -31,8 +32,8 @@ export const reviewsController = {
         })
     },
 
-    async delete(req: Request, res: Response){
-        const {id} = req.params
+    async delete(req: Request, res: Response) {
+        const { id } = req.params
 
         const review = reviewsService.delete(id as string)
 

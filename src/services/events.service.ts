@@ -77,6 +77,8 @@ export const eventsServices = {
         where: whereClause,
       }),
     ]);
+    
+    console.log([totalEvents])
 
 
     const totalPage = Math.ceil(totalEvents / limit);

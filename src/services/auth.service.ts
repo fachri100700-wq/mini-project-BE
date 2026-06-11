@@ -21,34 +21,34 @@ type ResetPasswordTokenPayload = {
 };
 
 export const authService = {
-    async register({ 
-            email,
-            username,
-            password,
-            role,
-            referralCode
-        }: RegisterDTO){
-        
+    async register({
+        email,
+        username,
+        password,
+        role,
+        referralCode
+    }: RegisterDTO) {
+
         const findUserByEmail = await prisma.user.findUnique({
             where: {
                 email
             }
         })
 
-        if(findUserByEmail) throw AppError('Email already registered', 409)
+        if (findUserByEmail) throw AppError('Email already registered', 409)
 
         const hashedPassword = await hashing(password);
         const newReferralCode = await generateReferralCode(prisma);
         const cleanReferralCode = referralCode?.trim();
-        
+
         let referrer: User | null = null;
 
-        if(cleanReferralCode) {
+        if (cleanReferralCode) {
             referrer = await prisma.user.findUnique({
                 where: { referralCode: cleanReferralCode },
             });
 
-            if(!referrer) {
+            if (!referrer) {
                 throw AppError("Invalid referral code", 400);
             }
         }
@@ -99,11 +99,11 @@ export const authService = {
             }
         })
 
-        if(!findUserByEmail) throw AppError('Invalid email or password', 401)
+        if (!findUserByEmail) throw AppError('Invalid email or password', 401)
 
         const passwordMatch = await hashMatch(password, findUserByEmail?.password);
 
-        if(!passwordMatch) throw AppError('Invalid email or password', 401)
+        if (!passwordMatch) throw AppError('Invalid email or password', 401)
 
         const token = jwtCreateToken(
             { userId: findUserByEmail?.id, role: findUserByEmail?.role },
@@ -114,26 +114,27 @@ export const authService = {
         )
 
         return {
+            id: findUserByEmail?.id,
             username: findUserByEmail?.username,
             Role: findUserByEmail?.role,
             token
         }
     },
 
-    async session(userId: string){
+    async session(userId: string) {
         const findUserById = await prisma.user.findUnique({
             where: {
                 id: userId
             }
         })
 
-        if(!findUserById) throw AppError("User not found", 404);
+        if (!findUserById) throw AppError("User not found", 404);
 
         return {
+            id: findUserById?.id,
             username: findUserById?.username,
             role: findUserById?.role
         }
-        
     },
 
     async forgotPassword(email: string) {
@@ -177,7 +178,7 @@ export const authService = {
             to: email,
             subject: 'Reset Password',
             html: html,
-        });   
+        });
     },
 
     async resetPassword(token: string, newPassword: string) {
@@ -189,7 +190,7 @@ export const authService = {
             throw AppError("Invalid or expired reset token", 400);
         }
 
-        if(payload.purpose !== "FORGOT_PASSWORD") {
+        if (payload.purpose !== "FORGOT_PASSWORD") {
             throw AppError("Invalid reset token purpose", 400);
         }
 
