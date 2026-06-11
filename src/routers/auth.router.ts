@@ -34,4 +34,6 @@ router.post("/reset-password",
     expressRequestValidation,
     authController.resetPassword);
 
+router.post("/logout", authController.logout);
+
 export default router;
